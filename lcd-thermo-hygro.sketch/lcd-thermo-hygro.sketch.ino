@@ -1,5 +1,5 @@
 /*
-  
+
 Digital Air quality
 
 This sketch is based on the examples from the libraries:
@@ -46,6 +46,13 @@ This sketch is based on the examples from the libraries:
 // with the arduino pin number it is connected to
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+float h = 0; // humidity
+float t = 0; // temperature
+float hic = 0; // heat index
+float dLine = 0; // index of the first line shown on the display
+
+float tOld = 0;
+float humOld = 0;
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11
@@ -55,8 +62,6 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 DHT dht(DHTPIN, DHTTYPE);
 
-byte tOld=0;
-byte humOld=0;
 char dataPool[10][16] = {
   "",
   "",
@@ -90,30 +95,33 @@ void updateDisplay(int sLine) {
 
 void loop() {
   // read with raw sample data.
-  byte temperature = 0;
-  byte humidity = 0;
-  byte data[40] = {0};
   Serial.println("=================================");
-  Serial.println("Sample DHT11...");
+  Serial.println("Sample DHT...");
 
-  int err = SimpleDHTErrSuccess;
+  t = dht.readTemperature();
+  h = dht.readHumidity();
+  hic = dht.computeHeatIndex(t, h, false);
+/*  int err = SimpleDHTErrSuccess;
   if ((err = dht.read(&temperature, &humidity, NULL)) != SimpleDHTErrSuccess) {
     Serial.print("Read DHT11 failed, err="); Serial.println(err);delay(1000);
     return;
   }
-  
-  Serial.print("Sample OK: ");
-  Serial.print((int)temperature); Serial.print(" *C, "); 
-  Serial.print((int)humidity); Serial.println(" H");
+*/
 
-/*  
-  dht.read(pinDHT11, &temperature, &humidity, NULL);
-  if ((tOld != temperature) || (humOld != humidity)) {
-    updateDisplay("Temp(C) : "+(int)temperature,"Humidity: "+(int)humidity);
-    tOld=temperature;
-    humOld=humidity;
-    return;
+
+  Serial.print("Sample OK: ");
+  Serial.print(t); Serial.print(" *C, ");
+  Serial.print(h); Serial.println(" H");
+
+  if ((tOld != t) || (humOld != h)) {
+    sprintf(dataPool[0], "Temp(C) : %2.1f", (double)t);
+    sprintf(dataPool[1], "Humitidy : %2.1f", (double)h);
+    sprintf(dataPool[2], "hic : %2.1f", (double)hic);
+    tOld=t;
+    humOld=h;
+    updateDisplay(dLine);
   }
-  */
+
   delay(10000);
 }
+
