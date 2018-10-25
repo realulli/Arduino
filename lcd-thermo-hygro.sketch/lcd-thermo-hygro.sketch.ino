@@ -41,6 +41,7 @@ This sketch is based on the examples from the libraries:
 #include <LiquidCrystal.h>
 //#include <SimpleDHT.h>
 #include <DHT.h>
+#include <stdio.h>
 
 // initialize the library by associating any needed LCD interface pin
 // with the arduino pin number it is connected to
@@ -53,6 +54,7 @@ float dLine = 0; // index of the first line shown on the display
 
 float tOld = 0;
 float humOld = 0;
+char tmpstr[17]; 
 
 // Uncomment whatever type you're using!
 //#define DHTTYPE DHT11   // DHT 11
@@ -88,12 +90,14 @@ void updateDisplay(int sLine) {
   char* one={dataPool[sLine]};
   char* two={dataPool[sLine+1]};
   lcd.setCursor(0,0);
-  lcd.print(one);
+//  lcd.print(one);
+  lcd.print(dataPool[sLine]);
   lcd.setCursor(0,1);
   lcd.print(two);
 }
 
 void loop() {
+  delay(2000);
   // read with raw sample data.
   Serial.println("=================================");
   Serial.println("Sample DHT...");
@@ -108,20 +112,28 @@ void loop() {
   }
 */
 
+  dtostrf(t, 4, 2, tmpstr);
+  sprintf(dataPool[0], "Temp(C):  %s", tmpstr);
 
-  Serial.print("Sample OK: ");
+  dtostrf(h, 4, 2, tmpstr);
+  sprintf(dataPool[1], "Humidity: %s", tmpstr);
+
+  dtostrf(hic, 4, 2, tmpstr);
+  sprintf(dataPool[2], "HeatIdx:  %s", tmpstr);
+
+
   Serial.print(t); Serial.print(" *C, ");
   Serial.print(h); Serial.println(" H");
 
   if ((tOld != t) || (humOld != h)) {
-    sprintf(dataPool[0], "Temp(C) : %2.1f", (double)t);
-    sprintf(dataPool[1], "Humitidy : %2.1f", (double)h);
-    sprintf(dataPool[2], "hic : %2.1f", (double)hic);
     tOld=t;
     humOld=h;
     updateDisplay(dLine);
+    Serial.println("Display updated:");
+    Serial.println(dataPool[0]);
+    Serial.println(dataPool[1]);
+    Serial.println(dataPool[2]);
   }
 
-  delay(10000);
+  delay(8000);
 }
-
